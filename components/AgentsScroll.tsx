@@ -85,6 +85,22 @@ function AgentImage({
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.3 });
+  const { muted, registerVideo, unregisterVideo } = useGlobalAudio();
+
+  // Register hover video with global audio
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    registerVideo(v);
+    return () => unregisterVideo(v);
+  }, [registerVideo, unregisterVideo]);
+
+  // Keep hover video muted in sync with global state
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+  }, [muted]);
 
   // Play/pause video on hover (preloaded, always in DOM)
   useEffect(() => {
@@ -92,12 +108,13 @@ function AgentImage({
     if (!v) return;
     if (hovered) {
       v.currentTime = 0;
+      v.muted = muted;
       v.play().catch(() => {});
     } else {
       v.pause();
       v.currentTime = 0;
     }
-  }, [hovered]);
+  }, [hovered]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <motion.div
