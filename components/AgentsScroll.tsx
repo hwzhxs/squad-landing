@@ -10,7 +10,6 @@ import {
   useInView,
 } from 'framer-motion';
 import { agents } from '@/lib/agents';
-import { useGlobalAudio } from '@/context/GlobalAudioContext';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function hexToRgb(hex: string): string {
@@ -85,46 +84,19 @@ function AgentImage({
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.3 });
-  const { muted, mutedRef, registerVideo, unregisterVideo } = useGlobalAudio();
 
-  // Register hover video with global audio
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    registerVideo(v);
-    return () => unregisterVideo(v);
-  }, [registerVideo, unregisterVideo]);
-
-  // Keep hover video muted in sync with global state
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = muted;
-  }, [muted]);
-
-  // Auto-mute when scrolled out of view — only unmute when in view and global audio allows it
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (!inView) {
-      v.muted = true;
-    } else {
-      v.muted = muted; // respect global state when in view
-    }
-  }, [inView, muted]);
-
-  // Autoplay video when scrolled into view, pause when out of view
+  // Autoplay video when scrolled into view, pause when out of view — always muted
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (inView) {
       v.currentTime = 0; // restart from beginning each time
-      v.muted = mutedRef.current ?? true; // non-stale ref
+      v.muted = true; // agent videos are always muted
       v.play().catch(() => {});
     } else {
       v.pause();
     }
-  }, [inView, mutedRef]);
+  }, [inView]);
 
   return (
     <motion.div
