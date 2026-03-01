@@ -145,54 +145,6 @@ function CustomCursor({ activeColor }: { activeColor: string }) {
   );
 }
 
-// ─── Animated role tag ─────────────────────────────────────────────────────────
-function RoleTag({
-  role,
-  accentColor,
-  primaryColor,
-  delay,
-}: {
-  role: string;
-  accentColor: string;
-  primaryColor: string;
-  delay: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: false, amount: 0.5 });
-
-  // Use primary color if accent is too dark (luminance check)
-  function luminance(hex: string) {
-    const h = hex.replace('#', '');
-    const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
-    const n = parseInt(full, 16);
-    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-    const toLinear = (c: number) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
-    return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-  }
-  const tagColor = luminance(accentColor) < 0.08 ? primaryColor : accentColor;
-  const rgb = hexToRgb(tagColor);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-      transition={{ duration: 0.5, delay }}
-      className="mt-4 inline-flex items-center gap-1 self-start font-mono text-sm"
-      style={{ color: `rgba(${rgb}, 0.9)` }}
-    >
-      <span className="opacity-50">{'<'}</span>
-      <motion.span
-        animate={{ opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        {role.toLowerCase()}
-      </motion.span>
-      <span className="opacity-50">{'/>'}</span>
-    </motion.div>
-  );
-}
-
 // ─── Image with scan/HUD/glow ──────────────────────────────────────────────────
 function AgentImage({
   agent,
@@ -446,9 +398,6 @@ function AgentText({ agent, index }: { agent: (typeof agents)[0]; index: number 
         >
           {agent.subtitle}
         </motion.p>
-
-        {/* Animated role tag */}
-        <RoleTag role={agent.role} accentColor={agent.accent} primaryColor={agent.primary} delay={0.26} />
 
         {/* Divider */}
         <motion.div

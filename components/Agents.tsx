@@ -180,18 +180,6 @@ function AgentText({ agent, index }: { agent: typeof agents[0]; index: number })
         {agent.subtitle}
       </motion.p>
 
-      {/* Spec #4: cleaner pill — just "• nickname" */}
-      <motion.div
-        className="mt-3 inline-block self-start rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest"
-        style={{
-          borderColor: `rgba(${accentRgb}, 0.5)`,
-          color: `rgba(${accentRgb}, 0.9)`,
-        }}
-        {...stagger(0.16)}
-      >
-        • {agent.nickname}
-      </motion.div>
-
       <motion.div
         className="mt-5 h-px w-16 origin-left"
         style={{ backgroundColor: `rgba(${accentRgb}, 0.4)` }}

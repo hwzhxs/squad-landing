@@ -1,39 +1,41 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import SplitText from '@/components/SplitText';
-
-const ease = [0.25, 0.1, 0.25, 1] as const;
 
 // Base path prefix for GitHub Pages
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
+const HERO_VIDEOS = [
+  `${BASE}/hero-videos/hero-1.mp4`,
+  `${BASE}/hero-videos/hero-2.mp4`,
+  `${BASE}/hero-videos/hero-3.mp4`,
+  `${BASE}/hero-videos/hero-4.mp4`,
+];
 
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [userMuted, setUserMuted] = useState(true);
   const [heroInView, setHeroInView] = useState(true);
   const [sloganVisible, setSloganVisible] = useState(false);
 
-  // Enforce playback rate = 1.0 on every load
+  // Advance to next video when current one ends
+  const handleEnded = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % HERO_VIDEOS.length);
+  }, []);
+
+  // When index changes, swap src and play
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    function enforcePlaybackRate() {
-      if (video && video.playbackRate !== 1.0) video.playbackRate = 1.0;
-    }
-    video.addEventListener('loadeddata', enforcePlaybackRate);
-    video.addEventListener('canplay', enforcePlaybackRate);
-    video.addEventListener('play', enforcePlaybackRate);
-    enforcePlaybackRate();
-    return () => {
-      video.removeEventListener('loadeddata', enforcePlaybackRate);
-      video.removeEventListener('canplay', enforcePlaybackRate);
-      video.removeEventListener('play', enforcePlaybackRate);
-    };
-  }, []);
+    video.src = HERO_VIDEOS[currentIndex];
+    video.load();
+    video.play().catch(() => {/* autoplay blocked */});
+  }, [currentIndex]);
 
   // Scroll listener: reveal slogan when user scrolls > 80px
   useEffect(() => {
@@ -49,30 +51,21 @@ export default function Hero() {
     const section = sectionRef.current;
     if (!section) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        const inView = entry.isIntersecting;
-        setHeroInView(inView);
-      },
+      ([entry]) => setHeroInView(entry.isIntersecting),
       { threshold: 0.1 }
     );
     obs.observe(section);
     return () => obs.disconnect();
   }, []);
 
-  // Mute when hero scrolls out; restore user preference when back in view
-  // FIX: always mutable — just default muted; no permanent lock
+  // Mute when hero scrolls out
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (!heroInView) {
-      video.muted = true;
-    } else {
-      video.muted = userMuted;
-    }
+    video.muted = heroInView ? userMuted : true;
   }, [heroInView, userMuted]);
 
   function toggleMute() {
-    // Only allow unmute when hero is in view
     if (!heroInView && userMuted) return;
     const next = !userMuted;
     setUserMuted(next);
@@ -90,13 +83,11 @@ export default function Hero() {
         <video
           ref={videoRef}
           autoPlay
-          loop
           muted={userMuted}
           playsInline
+          onEnded={handleEnded}
           className="absolute inset-0 h-full w-full object-cover object-center"
-        >
-          <source src={`${BASE}/hero-video.mp4`} type="video/mp4" />
-        </video>
+        />
         <div className="absolute inset-0" style={{ background: 'rgba(10,10,10,0.72)' }} />
         <div
           className="absolute inset-0"
@@ -104,7 +95,7 @@ export default function Hero() {
         />
       </div>
 
-      {/* Mute button — always functional (no permanent lock) */}
+      {/* Mute button */}
       <button
         onClick={toggleMute}
         aria-label={userMuted ? 'Unmute video' : 'Mute video'}
