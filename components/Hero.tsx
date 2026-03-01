@@ -27,16 +27,15 @@ export default function Hero() {
     return () => unregisterVideo(video);
   }, [registerVideo, unregisterVideo]);
 
-  // Load and play the single hero video on mount
+  // Play the single hero video on mount — `loop` is already set on the element
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     video.src = HERO_VIDEOS[0];
     video.muted = mutedRef.current ?? true;
-    video.loop = true;
-    video.load();
     video.play().catch(() => {/* autoplay blocked */});
-  }, [mutedRef]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Keep muted in sync with global state
   useEffect(() => {

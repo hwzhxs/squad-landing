@@ -102,6 +102,17 @@ function AgentImage({
     v.muted = muted;
   }, [muted]);
 
+  // Auto-mute when scrolled out of view — only unmute when in view and global audio allows it
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (!inView) {
+      v.muted = true;
+    } else {
+      v.muted = muted; // respect global state when in view
+    }
+  }, [inView, muted]);
+
   // Play/pause video on hover (preloaded, always in DOM)
   useEffect(() => {
     const v = videoRef.current;
