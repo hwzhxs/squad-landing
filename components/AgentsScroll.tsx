@@ -128,7 +128,7 @@ function AgentImage({
   return (
     <motion.div
       ref={ref}
-      className="relative w-full"
+      className={`relative w-full${fromLeft ? ' mt-12' : ''}`}
       style={{ y: yOffset }}
       initial={{ opacity: 0, x: fromLeft ? -120 : 120, scale: 0.92 }}
       animate={inView ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: fromLeft ? -120 : 120, scale: 0.92 }}
@@ -169,7 +169,7 @@ function AgentImage({
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={750}
-          className="h-[60vh] w-full object-cover object-top"
+          className="h-[52vh] w-full object-cover object-top"
           priority={index === 0}
         />
 
