@@ -8,12 +8,7 @@ import { useGlobalAudio } from '@/context/GlobalAudioContext';
 // Base path prefix for GitHub Pages
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-const HERO_VIDEOS = [
-  `${BASE}/hero-videos/hero-1.mp4`,
-  `${BASE}/hero-videos/hero-2.mp4`,
-  `${BASE}/hero-videos/hero-3.mp4`,
-  `${BASE}/hero-videos/hero-4.mp4`,
-];
+const HERO_VIDEOS = [`${BASE}/hero-videos/hero-1.mp4`];
 
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
