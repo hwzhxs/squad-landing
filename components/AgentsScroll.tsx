@@ -447,18 +447,6 @@ function AgentText({ agent, index }: { agent: (typeof agents)[0]; index: number 
           {agent.subtitle}
         </motion.p>
 
-        {/* Nickname badge */}
-        <motion.div
-          className="mt-3 inline-block self-start rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest"
-          style={{
-            borderColor: `rgba(${primaryRgb}, 0.5)`,
-            color: `rgba(${primaryRgb}, 1)`,
-          }}
-          {...fade(0.18)}
-        >
-          {agent.nickname}
-        </motion.div>
-
         {/* Animated role tag */}
         <RoleTag role={agent.role} accentColor={agent.accent} primaryColor={agent.primary} delay={0.26} />
 
