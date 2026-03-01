@@ -14,6 +14,9 @@ export interface Agent {
   video: string;
 }
 
+// Base path prefix for GitHub Pages — set via NEXT_PUBLIC_BASE_PATH env var
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 // Order: Popo (Admin), Tyler (Creator), Kanye (Thinker), Rocky (Gatekeeper)
 export const agents: Agent[] = [
   {
@@ -28,8 +31,8 @@ export const agents: Agent[] = [
     cardBg: '#1a2a3a',
     gradientFrom: '#0D1520',
     gradientTo: '#1A2A42',
-    image: '/images/agents/admin.png',
-    video: '/videos/agents/admin.mp4',
+    image: `${BASE}/images/agents/admin.png`,
+    video: `${BASE}/videos/agents/admin.mp4`,
   },
   {
     name: 'Tyler',
@@ -43,8 +46,8 @@ export const agents: Agent[] = [
     cardBg: '#1e1a10',
     gradientFrom: '#141210',
     gradientTo: '#2A2418',
-    image: '/images/agents/creator.png',
-    video: '/videos/agents/creator.mp4',
+    image: `${BASE}/images/agents/creator.png`,
+    video: `${BASE}/videos/agents/creator.mp4`,
   },
   {
     name: 'Kanye',
@@ -58,8 +61,8 @@ export const agents: Agent[] = [
     cardBg: '#2a2824',
     gradientFrom: '#1A1918',
     gradientTo: '#2A2824',
-    image: '/images/agents/thinker.png',
-    video: '/videos/agents/thinker.mp4',
+    image: `${BASE}/images/agents/thinker.png`,
+    video: `${BASE}/videos/agents/thinker.mp4`,
   },
   {
     name: 'Rocky',
@@ -73,16 +76,16 @@ export const agents: Agent[] = [
     cardBg: '#2a1e08',
     gradientFrom: '#1A1408',
     gradientTo: '#2A2210',
-    image: '/images/agents/gatekeeper.png',
-    video: '/videos/agents/gatekeeper.mp4',
+    image: `${BASE}/images/agents/gatekeeper.png`,
+    video: `${BASE}/videos/agents/gatekeeper.mp4`,
   },
 ];
 
 export const pipelineSteps = [
-  { label: 'Think', image: '/images/pipeline/think.png', agent: 'Thinker' },
-  { label: 'Build', image: '/images/pipeline/build.png', agent: 'Creator' },
-  { label: 'Check', image: '/images/pipeline/check.png', agent: 'Gatekeeper' },
-  { label: 'Ship',  image: '/images/pipeline/ship.png',  agent: 'Admin' },
+  { label: 'Think', image: `${BASE}/images/pipeline/think.png`, agent: 'Thinker' },
+  { label: 'Build', image: `${BASE}/images/pipeline/build.png`, agent: 'Creator' },
+  { label: 'Check', image: `${BASE}/images/pipeline/check.png`, agent: 'Gatekeeper' },
+  { label: 'Ship',  image: `${BASE}/images/pipeline/ship.png`,  agent: 'Admin' },
 ];
 
 export const terminalContent = `# Task Handoff

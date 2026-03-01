@@ -6,6 +6,9 @@ import SplitText from '@/components/SplitText';
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
 
+// Base path prefix for GitHub Pages
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -92,7 +95,7 @@ export default function Hero() {
           playsInline
           className="absolute inset-0 h-full w-full object-cover object-center"
         >
-          <source src="/hero-video.mp4" type="video/mp4" />
+          <source src={`${BASE}/hero-video.mp4`} type="video/mp4" />
         </video>
         <div className="absolute inset-0" style={{ background: 'rgba(10,10,10,0.72)' }} />
         <div
