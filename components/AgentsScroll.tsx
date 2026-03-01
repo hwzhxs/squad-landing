@@ -449,7 +449,7 @@ function AgentSection({
 
       {/* Content grid */}
       <div
-        className="relative z-30 mx-auto grid h-full w-full max-w-[1400px] grid-cols-1 items-center gap-8 px-8 md:grid-cols-2 md:px-16 lg:px-24"
+        className="relative z-30 mx-auto grid h-full w-full max-w-[1400px] grid-cols-1 items-center gap-8 px-8 pt-16 pb-16 md:grid-cols-2 md:px-16 lg:px-24"
       >
         {fromLeft ? (
           <>
