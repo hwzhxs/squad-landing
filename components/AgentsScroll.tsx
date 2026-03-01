@@ -113,19 +113,17 @@ function AgentImage({
     }
   }, [inView, muted]);
 
-  // Play/pause video on hover (preloaded, always in DOM)
+  // Autoplay video when scrolled into view, pause when out of view
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (hovered) {
-      v.currentTime = 0;
+    if (inView) {
       v.muted = mutedRef.current ?? true; // non-stale ref
       v.play().catch(() => {});
     } else {
       v.pause();
-      v.currentTime = 0;
     }
-  }, [hovered, mutedRef]);
+  }, [inView, mutedRef]);
 
   return (
     <motion.div
@@ -175,7 +173,7 @@ function AgentImage({
           priority={index === 0}
         />
 
-        {/* Hover video overlay — always in DOM, opacity toggled */}
+        {/* Scroll-triggered video overlay — plays when section in view */}
         <video
           ref={videoRef}
           src={agent.video}
@@ -185,8 +183,8 @@ function AgentImage({
           preload="auto"
           className="absolute inset-0 h-full w-full object-cover object-top"
           style={{
-            opacity: hovered ? 1 : 0,
-            transition: hovered ? 'opacity 0.25s ease-in' : 'none',
+            opacity: inView ? 1 : 0,
+            transition: 'opacity 0.4s ease-in',
             pointerEvents: 'none',
           }}
         />
