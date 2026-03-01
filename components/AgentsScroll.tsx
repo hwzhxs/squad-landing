@@ -133,6 +133,25 @@ function AgentImage({
           priority={index === 0}
         />
 
+        {/* Hover video overlay */}
+        <AnimatePresence>
+          {hovered && (
+            <motion.video
+              key="hover-video"
+              src={agent.video}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover object-top"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Scan sweep */}
         <AnimatePresence>
           {hovered && scanPos > -10 && scanPos < 110 && (
