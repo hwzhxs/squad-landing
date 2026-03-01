@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import SplitText from '@/components/SplitText';
 import { useGlobalAudio } from '@/context/GlobalAudioContext';
@@ -14,7 +14,6 @@ export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [heroInView, setHeroInView] = useState(true);
   const [sloganVisible, setSloganVisible] = useState(false);
 
@@ -28,20 +27,15 @@ export default function Hero() {
     return () => unregisterVideo(video);
   }, [registerVideo, unregisterVideo]);
 
-  // Advance to next video when current one ends
-  const handleEnded = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % HERO_VIDEOS.length);
-  }, []);
-
-  // When index changes, swap src and play — use mutedRef to avoid stale closure
+  // Load and play the single hero video on mount
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.src = HERO_VIDEOS[currentIndex];
+    video.src = HERO_VIDEOS[0];
     video.muted = mutedRef.current ?? true;
     video.load();
     video.play().catch(() => {/* autoplay blocked */});
-  }, [currentIndex, mutedRef]);
+  }, [mutedRef]);
 
   // Keep muted in sync with global state
   useEffect(() => {
@@ -95,8 +89,8 @@ export default function Hero() {
           ref={videoRef}
           autoPlay
           muted
+          loop
           playsInline
-          onEnded={handleEnded}
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0" style={{ background: 'rgba(10,10,10,0.72)' }} />
