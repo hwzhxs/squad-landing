@@ -23,7 +23,7 @@ export default function Hero() {
   const [heroInView, setHeroInView] = useState(true);
   const [sloganVisible, setSloganVisible] = useState(false);
 
-  const { muted, toggleMute, registerVideo, unregisterVideo } = useGlobalAudio();
+  const { muted, mutedRef, toggleMute, registerVideo, unregisterVideo } = useGlobalAudio();
 
   // Register hero video with global audio on mount
   useEffect(() => {
@@ -38,15 +38,15 @@ export default function Hero() {
     setCurrentIndex((prev) => (prev + 1) % HERO_VIDEOS.length);
   }, []);
 
-  // When index changes, swap src and play
+  // When index changes, swap src and play — use mutedRef to avoid stale closure
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     video.src = HERO_VIDEOS[currentIndex];
-    video.muted = muted;
+    video.muted = mutedRef.current ?? true;
     video.load();
     video.play().catch(() => {/* autoplay blocked */});
-  }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentIndex, mutedRef]);
 
   // Keep muted in sync with global state
   useEffect(() => {

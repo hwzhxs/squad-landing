@@ -85,7 +85,7 @@ function AgentImage({
   const ref = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.3 });
-  const { muted, registerVideo, unregisterVideo } = useGlobalAudio();
+  const { muted, mutedRef, registerVideo, unregisterVideo } = useGlobalAudio();
 
   // Register hover video with global audio
   useEffect(() => {
@@ -108,13 +108,13 @@ function AgentImage({
     if (!v) return;
     if (hovered) {
       v.currentTime = 0;
-      v.muted = muted;
+      v.muted = mutedRef.current ?? true; // non-stale ref
       v.play().catch(() => {});
     } else {
       v.pause();
       v.currentTime = 0;
     }
-  }, [hovered]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [hovered, mutedRef]);
 
   return (
     <motion.div

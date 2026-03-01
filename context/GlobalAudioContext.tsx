@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 interface AudioContextType {
-  muted: boolean;
+  muted: boolean;                          // reactive state for render
+  mutedRef: React.RefObject<boolean>;      // non-stale ref for effects
   toggleMute: () => Promise<void>;
   registerVideo: (el: HTMLVideoElement) => void;
   unregisterVideo: (el: HTMLVideoElement) => void;
@@ -11,6 +12,7 @@ interface AudioContextType {
 
 const AudioCtx = createContext<AudioContextType>({
   muted: true,
+  mutedRef: { current: true },
   toggleMute: async () => {},
   registerVideo: () => {},
   unregisterVideo: () => {},
@@ -78,7 +80,7 @@ export function GlobalAudioProvider({ children }: { children: React.ReactNode })
   }, []); // no deps — uses refs only
 
   return (
-    <AudioCtx.Provider value={{ muted, toggleMute, registerVideo, unregisterVideo }}>
+    <AudioCtx.Provider value={{ muted, mutedRef, toggleMute, registerVideo, unregisterVideo }}>
       {children}
     </AudioCtx.Provider>
   );
