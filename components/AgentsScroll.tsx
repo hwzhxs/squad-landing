@@ -48,7 +48,7 @@ function AgentImage({
   const yOffset = useTransform(
     scrollProgress,
     [0, 1],
-    fromLeft ? [-50, 50] : [50, -50],
+    fromLeft ? [-20, 20] : [20, -20],
   );
 
   // Scan sweep on hover — uses requestAnimationFrame for smooth animation
@@ -169,7 +169,7 @@ function AgentImage({
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={750}
-          className="h-[68vh] w-full object-cover object-top"
+          className="h-[60vh] w-full object-cover object-top"
           priority={index === 0}
         />
 
