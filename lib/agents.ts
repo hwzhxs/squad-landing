@@ -11,7 +11,6 @@ export interface Agent {
   gradientFrom: string;
   gradientTo: string;
   image: string;
-  video: string;
 }
 
 // Base path prefix for GitHub Pages — set via NEXT_PUBLIC_BASE_PATH env var
@@ -32,7 +31,6 @@ export const agents: Agent[] = [
     gradientFrom: '#0D1520',
     gradientTo: '#1A2A42',
     image: `${BASE}/images/agents/admin.png`,
-    video: `${BASE}/videos/agents/admin.mp4`,
   },
   {
     name: 'Tyler',
@@ -47,7 +45,6 @@ export const agents: Agent[] = [
     gradientFrom: '#141210',
     gradientTo: '#2A2418',
     image: `${BASE}/images/agents/creator.png`,
-    video: `${BASE}/videos/agents/creator.mp4`,
   },
   {
     name: 'Kanye',
@@ -62,7 +59,6 @@ export const agents: Agent[] = [
     gradientFrom: '#1A1918',
     gradientTo: '#2A2824',
     image: `${BASE}/images/agents/thinker.png`,
-    video: `${BASE}/videos/agents/thinker.mp4`,
   },
   {
     name: 'Rocky',
@@ -77,7 +73,6 @@ export const agents: Agent[] = [
     gradientFrom: '#1A1408',
     gradientTo: '#2A2210',
     image: `${BASE}/images/agents/gatekeeper.png`,
-    video: `${BASE}/videos/agents/gatekeeper.mp4`,
   },
 ];
 

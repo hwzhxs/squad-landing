@@ -10,7 +10,6 @@ import {
   useTransform,
 } from 'framer-motion';
 import { agents } from '@/lib/agents';
-import { useAudio } from '@/lib/audioContext';
 
 // ─── Hex → rgb ────────────────────────────────────────────────────────────────
 function hexToRgb(hex: string): string {
@@ -31,13 +30,11 @@ function TiltImage({
   scrollY: ReturnType<typeof useMotionValue<number>>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
   const rotateX = useSpring(rawY, { stiffness: 200, damping: 25 });
   const rotateY = useSpring(rawX, { stiffness: 200, damping: 25 });
   const [hovered, setHovered] = useState(false);
-  const { globalMuted } = useAudio();
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -52,36 +49,13 @@ function TiltImage({
 
   const onMouseEnter = useCallback(() => {
     setHovered(true);
-    const vid = videoRef.current;
-    if (vid) {
-      vid.currentTime = 0;
-      vid.muted = true; // Start muted to guarantee autoplay works
-      vid.play().then(() => {
-        // After play starts, respect globalMuted
-        vid.muted = globalMuted;
-      }).catch(() => {});
-    }
-  }, [globalMuted]);
+  }, []);
 
   const onMouseLeave = useCallback(() => {
     rawX.set(0);
     rawY.set(0);
     setHovered(false);
-    const vid = videoRef.current;
-    if (vid) {
-      vid.pause();
-      vid.currentTime = 0;
-      vid.muted = true;
-    }
   }, [rawX, rawY]);
-
-  // When globalMuted changes while video is playing and hovered, update immediately
-  useEffect(() => {
-    const vid = videoRef.current;
-    if (vid && hovered && !vid.paused) {
-      vid.muted = globalMuted;
-    }
-  }, [globalMuted, hovered]);
 
   const glowRgb = hexToRgb(agent.primary);
 
@@ -120,24 +94,13 @@ function TiltImage({
         }}
       />
       <div className="aspect-[3/5] w-full">
-        {/* Static image — hidden on hover */}
         <Image
           src={agent.image}
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={1000}
-          className={`relative z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${hovered ? 'opacity-0' : 'opacity-100'}`}
+          className="relative z-0 h-full w-full object-cover object-top"
           priority
-        />
-        {/* Video — shown on hover, plays in loop */}
-        <video
-          ref={videoRef}
-          src={agent.video}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className={`absolute inset-0 z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}
         />
       </div>
     </motion.div>
@@ -155,12 +118,10 @@ function AgentText({ agent, index }: { agent: typeof agents[0]; index: number })
     transition: { duration: 0.55, delay, ease: [0.25, 0.1, 0.25, 1] as const },
   });
 
-  // Spec #2: index label e.g. "01 ———"
   const indexLabel = String(index + 1).padStart(2, '0');
 
   return (
     <div className="flex flex-col justify-center px-4 lg:px-10">
-      {/* Spec #2: index number above name */}
       <motion.span
         className="mb-3 font-mono text-xs tracking-widest"
         style={{ color: 'rgba(255,255,255,0.35)' }}
@@ -181,7 +142,6 @@ function AgentText({ agent, index }: { agent: typeof agents[0]; index: number })
         {agent.name}
       </motion.h2>
 
-      {/* Spec #3: subtitle in accent color */}
       <motion.p
         className="mt-1 font-mono text-sm font-medium tracking-wider"
         style={{ color: agent.accent }}
@@ -199,7 +159,6 @@ function AgentText({ agent, index }: { agent: typeof agents[0]; index: number })
         transition={{ duration: 0.5, delay: 0.24, ease: 'easeOut' }}
       />
 
-      {/* Spec #5: richer description copy (already set in agents.ts) */}
       <motion.p
         className="mt-5 max-w-xs text-lg leading-relaxed text-white/60"
         {...stagger(0.3)}
@@ -207,7 +166,6 @@ function AgentText({ agent, index }: { agent: typeof agents[0]; index: number })
         {agent.description}
       </motion.p>
 
-      {/* Spec #7: decorative code line */}
       <motion.p
         className="mt-4 font-mono text-xs"
         style={{ color: 'rgba(255,255,255,0.15)' }}
@@ -230,7 +188,6 @@ function DotIndicator({ active }: { active: number }) {
             key={i}
             className="h-2 w-2 rounded-full"
             animate={{
-              // Spec #6: active dot scale 2 instead of 1.5
               scale: i === active ? 2 : 1,
               opacity: i === active ? 1 : 0.35,
               backgroundColor: i === active ? agent.primary : 'rgba(255,255,255,0.4)',
@@ -293,7 +250,6 @@ function AgentSection({
   const fromLeft = index % 2 === 0;
   const sectionRef = useRef<HTMLElement>(null);
 
-  // IntersectionObserver to know which section is active
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
@@ -305,7 +261,6 @@ function AgentSection({
     return () => obs.disconnect();
   }, [index, onVisible]);
 
-  // Drive parallax from scroll progress within this section
   const { scrollYProgress: sectionScroll } = useScroll({
     target: sectionRef,
     offset: ['start end', 'end start'],
@@ -319,7 +274,6 @@ function AgentSection({
         background: `linear-gradient(135deg, ${agent.gradientFrom} 0%, ${agent.gradientTo} 100%)`,
       }}
     >
-      {/* Vignette */}
       <div
         className="pointer-events-none absolute inset-0 z-10"
         style={{
@@ -328,7 +282,6 @@ function AgentSection({
         }}
       />
 
-      {/* Content grid */}
       <div
         className="relative z-30 mx-auto grid h-full w-full max-w-[1400px] grid-cols-1 items-center gap-8 px-8 md:grid-cols-2 md:px-16 lg:px-24"
       >
@@ -357,7 +310,6 @@ export default function Agents() {
 
   return (
     <div ref={containerRef} className="relative cursor-none" id="agents">
-      {/* Spotlight spans the full container */}
       <SpotlightCursor
         containerRef={containerRef as React.RefObject<HTMLElement>}
         primaryColor={agents[activeIndex].primary}
@@ -376,3 +328,5 @@ export default function Agents() {
     </div>
   );
 }
+
+

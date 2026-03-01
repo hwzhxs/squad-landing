@@ -9,7 +9,7 @@ const config: Config = {
     extend: {
       colors: {
         bg: {
-          primary: '#0a0a0a',
+          primary: '#0C0C0E',
           card: '#141414',
           'card-hover': '#1a1a1a',
           elevated: '#161618',

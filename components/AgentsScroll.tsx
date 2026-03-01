@@ -5,7 +5,6 @@ import Image from 'next/image';
 import {
   motion,
   useMotionValue,
-  useSpring,
   useScroll,
   useTransform,
   useInView,
@@ -21,131 +20,6 @@ function hexToRgb(hex: string): string {
   return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
 }
 
-// ─── Custom Cursor — targeting reticle ────────────────────────────────────────
-function CustomCursor({ activeColor }: { activeColor: string }) {
-  const [isTouch, setIsTouch] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-
-  const posX = useMotionValue(-200);
-  const posY = useMotionValue(-200);
-  // Spring-lagged position for the reticle body
-  const springX = useSpring(posX, { stiffness: 140, damping: 16 });
-  const springY = useSpring(posY, { stiffness: 140, damping: 16 });
-
-  useEffect(() => {
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      setIsTouch(true);
-      return;
-    }
-
-    const onMove = (e: MouseEvent) => {
-      posX.set(e.clientX);
-      posY.set(e.clientY);
-    };
-
-    const onOver = (e: MouseEvent) => {
-      const t = e.target as HTMLElement;
-      setIsHovering(!!t.closest('a, button, [data-cursor-hover]'));
-    };
-
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseover', onOver);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseover', onOver);
-    };
-  }, [posX, posY]);
-
-  if (isTouch) return null;
-
-  const rgb = hexToRgb(activeColor);
-  const size = isHovering ? 28 : 40;
-  const cornerLen = isHovering ? 7 : 10;
-  const thickness = 2;
-
-  // Corner bracket style factory
-  const corner = (top: boolean, left: boolean): React.CSSProperties => ({
-    position: 'absolute',
-    width: cornerLen,
-    height: cornerLen,
-    borderTop: top ? `${thickness}px solid rgba(${rgb}, 0.95)` : 'none',
-    borderBottom: !top ? `${thickness}px solid rgba(${rgb}, 0.95)` : 'none',
-    borderLeft: left ? `${thickness}px solid rgba(${rgb}, 0.95)` : 'none',
-    borderRight: !left ? `${thickness}px solid rgba(${rgb}, 0.95)` : 'none',
-    top: top ? 0 : 'auto',
-    bottom: !top ? 0 : 'auto',
-    left: left ? 0 : 'auto',
-    right: !left ? 0 : 'auto',
-  });
-
-  return (
-    <>
-      {/* Center dot — snaps to cursor position exactly */}
-      <motion.div
-        className="pointer-events-none fixed z-[9999]"
-        style={{
-          x: posX,
-          y: posY,
-          translateX: '-50%',
-          translateY: '-50%',
-          top: 0,
-          left: 0,
-          width: isHovering ? 5 : 3,
-          height: isHovering ? 5 : 3,
-          borderRadius: '50%',
-          backgroundColor: `rgba(${rgb}, 1)`,
-          boxShadow: `0 0 8px 2px rgba(${rgb}, 0.8)`,
-          transition: 'width 0.15s, height 0.15s, background-color 0.3s, box-shadow 0.3s',
-        }}
-      />
-
-      {/* Reticle brackets — spring-lagged */}
-      <motion.div
-        className="pointer-events-none fixed z-[9998]"
-        style={{
-          x: springX,
-          y: springY,
-          translateX: '-50%',
-          translateY: '-50%',
-          top: 0,
-          left: 0,
-          width: size,
-          height: size,
-          rotate: isHovering ? 45 : 0,
-          transition: 'width 0.2s, height 0.2s, rotate 0.25s',
-        }}
-        animate={{
-          rotate: [0, 90, 180, 270, 360],
-        }}
-        transition={{
-          rotate: {
-            duration: 8,
-            repeat: Infinity,
-            ease: 'linear',
-          },
-        }}
-      >
-        {/* 4 corner brackets */}
-        <div style={corner(true, true)} />
-        <div style={corner(true, false)} />
-        <div style={corner(false, true)} />
-        <div style={corner(false, false)} />
-
-        {/* Subtle glow halo */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: -6,
-            borderRadius: '50%',
-            background: `radial-gradient(circle, rgba(${rgb}, 0.12) 0%, transparent 70%)`,
-          }}
-        />
-      </motion.div>
-    </>
-  );
-}
-
-// ─── Image with scan/HUD/glow ──────────────────────────────────────────────────
 function AgentImage({
   agent,
   fromLeft,
@@ -158,34 +32,16 @@ function AgentImage({
   index: number;
 }) {
   const [hovered, setHovered] = useState(false);
-  const [videoVisible, setVideoVisible] = useState(false);
-  const [videoOpacity, setVideoOpacity] = useState(0);
   const [scanPos, setScanPos] = useState(-10);
   const scanAnim = useRef<number | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const rgb = hexToRgb(agent.primary);
 
   const handleMouseEnter = useCallback(() => {
     setHovered(true);
-    setVideoVisible(true);
-    const video = videoRef.current;
-    if (video) {
-      video.currentTime = 0;
-      video.play().catch(() => {/* autoplay blocked */});
-    }
-    // Tiny rAF delay so the element is visible before we start the CSS transition
-    requestAnimationFrame(() => setVideoOpacity(1));
   }, []);
 
   const handleMouseLeave = useCallback(() => {
     setHovered(false);
-    setVideoOpacity(0);
-    setVideoVisible(false); // Instant hide — no delay, no jump
-    const video = videoRef.current;
-    if (video) {
-      video.pause();
-      video.currentTime = 0;
-    }
   }, []);
 
   // Parallax
@@ -259,7 +115,7 @@ function AgentImage({
         }
       />
 
-      {/* Image frame — hover handlers on the actual visible card boundary */}
+      {/* Image frame */}
       <div
         className="relative overflow-hidden rounded-2xl"
         style={{
@@ -275,22 +131,6 @@ function AgentImage({
           height={750}
           className="h-[68vh] w-full object-cover object-top"
           priority={index === 0}
-        />
-
-        {/* Hover video overlay — visibility + CSS opacity transition, no framer-motion animate */}
-        <video
-          ref={videoRef}
-          src={agent.video}
-          muted
-          playsInline
-          loop
-          preload="metadata"
-          className="absolute inset-0 h-full w-full object-cover object-top pointer-events-none"
-          style={{
-            visibility: videoVisible ? 'visible' : 'hidden',
-            opacity: videoOpacity,
-            transition: videoOpacity === 1 ? 'opacity 0.25s ease-in' : 'none',
-          }}
         />
 
         {/* Scan sweep */}
@@ -599,9 +439,6 @@ export default function AgentsScroll() {
 
   return (
     <div className="relative" id="agents">
-      {/* Custom cursor (global — outside section loop) */}
-      <CustomCursor activeColor={agents[activeIndex].primary} />
-
       {agents.map((agent, i) => (
         <AgentSection
           key={agent.nickname}
