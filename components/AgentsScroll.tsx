@@ -198,15 +198,43 @@ function AgentImage({
   agent,
   fromLeft,
   scrollProgress,
+  index,
 }: {
   agent: (typeof agents)[0];
   fromLeft: boolean;
   scrollProgress: ReturnType<typeof useMotionValue<number>>;
+  index: number;
 }) {
   const [hovered, setHovered] = useState(false);
+  const [videoVisible, setVideoVisible] = useState(false);
+  const [videoOpacity, setVideoOpacity] = useState(0);
   const [scanPos, setScanPos] = useState(-10);
-  const scanAnim = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scanAnim = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const rgb = hexToRgb(agent.primary);
+
+  const handleMouseEnter = useCallback(() => {
+    setHovered(true);
+    setVideoVisible(true);
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+      video.play().catch(() => {/* autoplay blocked */});
+    }
+    // Tiny rAF delay so the element is visible before we start the CSS transition
+    requestAnimationFrame(() => setVideoOpacity(1));
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHovered(false);
+    setVideoOpacity(0);
+    setVideoVisible(false); // Instant hide — no delay, no jump
+    const video = videoRef.current;
+    if (video) {
+      video.pause();
+      video.currentTime = 0;
+    }
+  }, []);
 
   // Parallax
   const yOffset = useTransform(
@@ -215,25 +243,34 @@ function AgentImage({
     fromLeft ? [-50, 50] : [50, -50],
   );
 
-  // Scan sweep on hover
+  // Scan sweep on hover — uses requestAnimationFrame for smooth animation
   useEffect(() => {
     if (hovered) {
-      setScanPos(-10);
       let pos = -10;
-      scanAnim.current = setInterval(() => {
-        pos += 1.8;
-        setScanPos(pos);
+      let lastTime = 0;
+      const speed = 150; // pixels-percent per second
+
+      const tick = (time: number) => {
+        if (!lastTime) lastTime = time;
+        const dt = time - lastTime;
+        lastTime = time;
+        pos += speed * (dt / 1000);
         if (pos > 110) {
-          if (scanAnim.current) clearInterval(scanAnim.current);
           setScanPos(-10);
+          return; // animation complete
         }
-      }, 12);
+        setScanPos(pos);
+        scanAnim.current = requestAnimationFrame(tick);
+      };
+
+      setScanPos(-10);
+      scanAnim.current = requestAnimationFrame(tick);
     } else {
-      if (scanAnim.current) clearInterval(scanAnim.current);
+      if (scanAnim.current) cancelAnimationFrame(scanAnim.current);
       setScanPos(-10);
     }
     return () => {
-      if (scanAnim.current) clearInterval(scanAnim.current);
+      if (scanAnim.current) cancelAnimationFrame(scanAnim.current);
     };
   }, [hovered]);
 
@@ -248,8 +285,6 @@ function AgentImage({
       initial={{ opacity: 0, x: fromLeft ? -120 : 120, scale: 0.92 }}
       animate={inView ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: fromLeft ? -120 : 120, scale: 0.92 }}
       transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       {/* Glow pulse */}
       <motion.div
@@ -272,27 +307,37 @@ function AgentImage({
         }
       />
 
-      {/* Image frame */}
+      {/* Image frame — hover handlers on the actual visible card boundary */}
       <div
         className="relative overflow-hidden rounded-2xl"
         style={{
           boxShadow: `0 0 0 1px rgba(${rgb}, 0.2), 0 24px 80px rgba(0,0,0,0.5)`,
         }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <Image
           src={agent.image}
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={750}
-          className="h-[68vh] w-full object-contain"
-          priority
+          className="h-[68vh] w-full object-cover object-top"
+          priority={index === 0}
         />
 
-        {/* Inner radial glow overlay */}
-        <div
-          className="pointer-events-none absolute inset-0 z-10"
+        {/* Hover video overlay — visibility + CSS opacity transition, no framer-motion animate */}
+        <video
+          ref={videoRef}
+          src={agent.video}
+          muted
+          playsInline
+          loop
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover object-top pointer-events-none"
           style={{
-            background: `radial-gradient(ellipse 70% 70% at 50% 50%, rgba(${rgb}, 0.12), transparent 75%)`,
+            visibility: videoVisible ? 'visible' : 'hidden',
+            opacity: videoOpacity,
+            transition: videoOpacity === 1 ? 'opacity 0.25s ease-in' : 'none',
           }}
         />
 
@@ -572,6 +617,7 @@ function AgentSection({
               agent={agent}
               fromLeft
               scrollProgress={scrollYProgress as ReturnType<typeof useMotionValue<number>>}
+              index={index}
             />
             <AgentText agent={agent} index={index} />
           </>
@@ -582,6 +628,7 @@ function AgentSection({
               agent={agent}
               fromLeft={false}
               scrollProgress={scrollYProgress as ReturnType<typeof useMotionValue<number>>}
+              index={index}
             />
           </>
         )}

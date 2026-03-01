@@ -3,6 +3,7 @@ export interface Agent {
   nickname: string;
   emoji: string;
   role: string;
+  subtitle: string;
   description: string;
   accent: string;
   primary: string;
@@ -10,6 +11,7 @@ export interface Agent {
   gradientFrom: string;
   gradientTo: string;
   image: string;
+  video: string;
 }
 
 // Order: Popo (Admin), Tyler (Creator), Kanye (Thinker), Rocky (Gatekeeper)
@@ -19,52 +21,60 @@ export const agents: Agent[] = [
     nickname: 'Admin',
     emoji: '\u{1F693}',
     role: 'Coordinator',
-    description: 'Orchestrates the team. Assigns tasks, coordinates handoffs, keeps the rhythm.',
+    subtitle: 'The Police',
+    description: 'Orchestrates the entire operation. Assigns missions, coordinates handoffs, maintains order across the squad. The law of the land.',
     primary: '#3A4F7A',
     accent: '#8B7D5C',
     cardBg: '#1a2a3a',
     gradientFrom: '#0D1520',
     gradientTo: '#1A2A42',
     image: '/images/agents/admin.png',
+    video: '/videos/agents/admin.mp4',
   },
   {
     name: 'Tyler',
     nickname: 'Creator',
     emoji: '\u{1F3A8}',
     role: 'Builder',
-    description: 'Turns specs into reality. Code, design, implementation \u2014 every pixel, every line.',
+    subtitle: 'The Creator',
+    description: 'Turns ideas into things people can see, touch, and feel. Code, design, implementation \u2014 every pixel shipped with intention.',
     primary: '#C49A1A',
     accent: '#D4A843',
     cardBg: '#1e1a10',
     gradientFrom: '#141210',
     gradientTo: '#2A2418',
     image: '/images/agents/creator.png',
+    video: '/videos/agents/creator.mp4',
   },
   {
     name: 'Kanye',
     nickname: 'Thinker',
     emoji: '\u{1F9E0}',
     role: 'Researcher',
-    description: "Goes deep on problems. Research, analysis, specs \u2014 the team's brain and strategist.",
+    subtitle: 'The Thinker',
+    description: 'Goes deep where others skim. Research, analysis, specs \u2014 the strategic brain that shapes every decision.',
     primary: '#E8E0D0',
     accent: '#C8A84E',
     cardBg: '#2a2824',
     gradientFrom: '#1A1918',
     gradientTo: '#2A2824',
     image: '/images/agents/thinker.png',
+    video: '/videos/agents/thinker.mp4',
   },
   {
     name: 'Rocky',
     nickname: 'Gatekeeper',
     emoji: '\u{1F6E1}',
     role: 'Reviewer',
-    description: 'Quality control. Every deliverable passes through before shipping. Nothing slips by.',
+    subtitle: 'The Gatekeeper',
+    description: 'Quality control without compromise. Every deliverable passes through before shipping. Nothing slips past the gate.',
     primary: '#D4940C',
     accent: '#E8A020',
     cardBg: '#2a1e08',
     gradientFrom: '#1A1408',
     gradientTo: '#2A2210',
     image: '/images/agents/gatekeeper.png',
+    video: '/videos/agents/gatekeeper.mp4',
   },
 ];
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
@@ -30,6 +30,7 @@ function TiltImage({
   scrollY: ReturnType<typeof useMotionValue<number>>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
   const rotateX = useSpring(rawY, { stiffness: 200, damping: 25 });
@@ -47,10 +48,29 @@ function TiltImage({
     [rawX, rawY],
   );
 
+  const onMouseEnter = useCallback(() => {
+    setHovered(true);
+    const vid = videoRef.current;
+    if (vid) {
+      vid.currentTime = 0;
+      vid.muted = true; // Start muted to guarantee autoplay works
+      vid.play().then(() => {
+        // Unmute after play starts successfully
+        vid.muted = false;
+      }).catch(() => {});
+    }
+  }, []);
+
   const onMouseLeave = useCallback(() => {
     rawX.set(0);
     rawY.set(0);
     setHovered(false);
+    const vid = videoRef.current;
+    if (vid) {
+      vid.pause();
+      vid.currentTime = 0;
+      vid.muted = true;
+    }
   }, [rawX, rawY]);
 
   const glowRgb = hexToRgb(agent.primary);
@@ -61,7 +81,7 @@ function TiltImage({
   return (
     <motion.div
       ref={ref}
-      className="relative w-full"
+      className="relative mx-auto w-[45%] md:w-[40%]"
       style={{
         rotateX,
         rotateY,
@@ -76,7 +96,7 @@ function TiltImage({
         transition: 'box-shadow 0.4s ease',
       }}
       onMouseMove={onMouseMove}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       initial={{ opacity: 0, x: fromLeft ? -100 : 100 }}
       whileInView={{ opacity: 1, x: 0 }}
@@ -89,20 +109,33 @@ function TiltImage({
           background: `radial-gradient(ellipse 60% 60% at 50% 50%, rgba(${glowRgb}, 0.18), transparent 70%)`,
         }}
       />
-      <Image
-        src={agent.image}
-        alt={`${agent.name} — ${agent.nickname}`}
-        width={600}
-        height={750}
-        className="relative z-0 h-[70vh] w-full object-contain"
-        priority
-      />
+      <div className="aspect-[3/5] w-full">
+        {/* Static image — hidden on hover */}
+        <Image
+          src={agent.image}
+          alt={`${agent.name} — ${agent.nickname}`}
+          width={600}
+          height={1000}
+          className={`relative z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${hovered ? 'opacity-0' : 'opacity-100'}`}
+          priority
+        />
+        {/* Video — shown on hover, plays in loop */}
+        <video
+          ref={videoRef}
+          src={agent.video}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className={`absolute inset-0 z-0 h-full w-full object-cover object-top transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}
+        />
+      </div>
     </motion.div>
   );
 }
 
 // ─── Staggered text block ─────────────────────────────────────────────────────
-function AgentText({ agent }: { agent: typeof agents[0] }) {
+function AgentText({ agent, index }: { agent: typeof agents[0]; index: number }) {
   const accentRgb = hexToRgb(agent.accent);
 
   const stagger = (delay: number) => ({
@@ -112,9 +145,21 @@ function AgentText({ agent }: { agent: typeof agents[0] }) {
     transition: { duration: 0.55, delay, ease: [0.25, 0.1, 0.25, 1] as const },
   });
 
+  // Spec #2: index label e.g. "01 ———"
+  const indexLabel = String(index + 1).padStart(2, '0');
+
   return (
     <div className="flex flex-col justify-center px-4 lg:px-10">
-      <motion.span className="block text-[3.5rem] leading-none" {...stagger(0)}>
+      {/* Spec #2: index number above name */}
+      <motion.span
+        className="mb-3 font-mono text-xs tracking-widest"
+        style={{ color: 'rgba(255,255,255,0.35)' }}
+        {...stagger(0)}
+      >
+        {indexLabel} &nbsp;———
+      </motion.span>
+
+      <motion.span className="block text-[3.5rem] leading-none" {...stagger(0.04)}>
         {agent.emoji}
       </motion.span>
 
@@ -126,6 +171,16 @@ function AgentText({ agent }: { agent: typeof agents[0] }) {
         {agent.name}
       </motion.h2>
 
+      {/* Spec #3: subtitle in accent color */}
+      <motion.p
+        className="mt-1 font-mono text-sm font-medium tracking-wider"
+        style={{ color: agent.accent }}
+        {...stagger(0.12)}
+      >
+        {agent.subtitle}
+      </motion.p>
+
+      {/* Spec #4: cleaner pill — just "• nickname" */}
       <motion.div
         className="mt-3 inline-block self-start rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest"
         style={{
@@ -134,7 +189,7 @@ function AgentText({ agent }: { agent: typeof agents[0] }) {
         }}
         {...stagger(0.16)}
       >
-        {agent.nickname} — {agent.role}
+        • {agent.nickname}
       </motion.div>
 
       <motion.div
@@ -146,11 +201,21 @@ function AgentText({ agent }: { agent: typeof agents[0] }) {
         transition={{ duration: 0.5, delay: 0.24, ease: 'easeOut' }}
       />
 
+      {/* Spec #5: richer description copy (already set in agents.ts) */}
       <motion.p
         className="mt-5 max-w-xs text-lg leading-relaxed text-white/60"
         {...stagger(0.3)}
       >
         {agent.description}
+      </motion.p>
+
+      {/* Spec #7: decorative code line */}
+      <motion.p
+        className="mt-4 font-mono text-xs"
+        style={{ color: 'rgba(255,255,255,0.15)' }}
+        {...stagger(0.38)}
+      >
+        {`<agent-role="${agent.role}" status="online" />`}
       </motion.p>
     </div>
   );
@@ -167,7 +232,8 @@ function DotIndicator({ active }: { active: number }) {
             key={i}
             className="h-2 w-2 rounded-full"
             animate={{
-              scale: i === active ? 1.5 : 1,
+              // Spec #6: active dot scale 2 instead of 1.5
+              scale: i === active ? 2 : 1,
               opacity: i === active ? 1 : 0.35,
               backgroundColor: i === active ? agent.primary : 'rgba(255,255,255,0.4)',
             }}
@@ -271,11 +337,11 @@ function AgentSection({
         {fromLeft ? (
           <>
             <TiltImage agent={agent} fromLeft scrollY={sectionScroll as unknown as ReturnType<typeof useMotionValue<number>>} />
-            <AgentText agent={agent} />
+            <AgentText agent={agent} index={index} />
           </>
         ) : (
           <>
-            <AgentText agent={agent} />
+            <AgentText agent={agent} index={index} />
             <TiltImage agent={agent} fromLeft={false} scrollY={sectionScroll as unknown as ReturnType<typeof useMotionValue<number>>} />
           </>
         )}
