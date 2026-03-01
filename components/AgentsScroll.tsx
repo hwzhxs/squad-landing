@@ -8,9 +8,9 @@ import {
   useScroll,
   useTransform,
   useInView,
-  AnimatePresence,
 } from 'framer-motion';
 import { agents } from '@/lib/agents';
+import { useGlobalAudio } from '@/context/GlobalAudioContext';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function hexToRgb(hex: string): string {
@@ -83,7 +83,21 @@ function AgentImage({
   }, [hovered]);
 
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.3 });
+
+  // Play/pause video on hover (preloaded, always in DOM)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (hovered) {
+      v.currentTime = 0;
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+      v.currentTime = 0;
+    }
+  }, [hovered]);
 
   return (
     <motion.div
@@ -133,40 +147,35 @@ function AgentImage({
           priority={index === 0}
         />
 
-        {/* Hover video overlay */}
-        <AnimatePresence>
-          {hovered && (
-            <motion.video
-              key="hover-video"
-              src={agent.video}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover object-top"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            />
-          )}
-        </AnimatePresence>
+        {/* Hover video overlay — always in DOM, opacity toggled */}
+        <video
+          ref={videoRef}
+          src={agent.video}
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          style={{
+            opacity: hovered ? 1 : 0,
+            transition: hovered ? 'opacity 0.25s ease-in' : 'none',
+            pointerEvents: 'none',
+          }}
+        />
 
         {/* Scan sweep */}
-        <AnimatePresence>
-          {hovered && scanPos > -10 && scanPos < 110 && (
-            <div
-              className="pointer-events-none absolute inset-x-0 z-30"
-              style={{
-                top: `${scanPos}%`,
-                height: '3px',
-                background: `linear-gradient(90deg, transparent, rgba(${rgb}, 0.85), transparent)`,
-                boxShadow: `0 0 12px 3px rgba(${rgb}, 0.5)`,
-                filter: 'blur(0.5px)',
-              }}
-            />
-          )}
-        </AnimatePresence>
+        {hovered && scanPos > -10 && scanPos < 110 && (
+          <div
+            className="pointer-events-none absolute inset-x-0 z-30"
+            style={{
+              top: `${scanPos}%`,
+              height: '3px',
+              background: `linear-gradient(90deg, transparent, rgba(${rgb}, 0.85), transparent)`,
+              boxShadow: `0 0 12px 3px rgba(${rgb}, 0.5)`,
+              filter: 'blur(0.5px)',
+            }}
+          />
+        )}
       </div>
 
       {/* HUD corner brackets */}
