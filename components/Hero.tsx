@@ -33,6 +33,7 @@ export default function Hero() {
     if (!video) return;
     video.src = HERO_VIDEOS[0];
     video.muted = mutedRef.current ?? true;
+    video.loop = true;
     video.load();
     video.play().catch(() => {/* autoplay blocked */});
   }, [mutedRef]);
