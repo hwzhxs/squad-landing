@@ -6,7 +6,7 @@ const ease = [0.25, 0.1, 0.25, 1] as const;
 
 export default function PullQuote() {
   return (
-    <section aria-label="Motto" className="px-6 py-32">
+    <section aria-label="Motto" className="px-6 py-32 min-h-screen flex flex-col justify-center snap-start">
       {/* Optional subtle rule */}
       <div className="mx-auto mb-16 h-px w-[120px] bg-border" />
 

@@ -31,7 +31,7 @@ export default function Terminal() {
   const lines = terminalContent.split('\n');
 
   return (
-    <section aria-label="Under the Hood" className="px-6 py-40 md:px-12 lg:px-16">
+    <section aria-label="Under the Hood" className="px-6 py-40 md:px-12 lg:px-16 min-h-screen snap-start">
       <div className="mx-auto max-w-[1200px]">
         <motion.h2
           className="text-center font-display text-[clamp(1.75rem,5vw,3rem)] font-normal text-text-primary"

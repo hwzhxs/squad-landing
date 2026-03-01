@@ -6,7 +6,7 @@ const ease = [0.25, 0.1, 0.25, 1] as const;
 
 export default function CTA() {
   return (
-    <section aria-label="Call to action" className="px-6 py-32">
+    <section aria-label="Call to action" className="px-6 py-32 min-h-screen flex flex-col justify-center snap-start">
       <div className="mx-auto max-w-[600px] text-center">
         <motion.h2
           className="font-display text-[clamp(1.75rem,5vw,2.5rem)] font-normal text-text-primary"

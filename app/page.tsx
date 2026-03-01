@@ -9,7 +9,7 @@ import Footer from '@/components/Footer';
 export default function Home() {
   return (
     <>
-      <main id="main">
+      <main id="main" className="h-screen overflow-y-scroll snap-y snap-mandatory">
         <Hero />
         <AgentsScroll />
         <PullQuote />

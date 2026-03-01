@@ -427,7 +427,7 @@ function AgentSection({
     <section
       ref={sectionRef}
       id={`agent-${index}`}
-      className="relative flex h-screen w-full items-center overflow-hidden"
+      className="relative flex h-screen w-full items-center overflow-hidden snap-start"
       style={{
         background: `linear-gradient(135deg, ${agent.gradientFrom} 0%, ${agent.gradientTo} 100%)`,
       }}

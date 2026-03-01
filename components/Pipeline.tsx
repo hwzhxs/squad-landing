@@ -51,7 +51,7 @@ const pipelineSteps = [
 
 export default function Pipeline() {
   return (
-    <section aria-label="Pipeline" className="relative px-6 py-40 md:px-12 lg:px-16 overflow-hidden">
+    <section aria-label="Pipeline" className="relative px-6 py-40 md:px-12 lg:px-16 overflow-hidden min-h-screen snap-start">
       {/* subtle HUD grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"

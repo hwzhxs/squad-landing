@@ -81,7 +81,7 @@ export default function Hero() {
     <section
       ref={sectionRef}
       aria-label="Hero"
-      className="relative flex min-h-[85vh] items-center justify-center px-6 overflow-hidden"
+      className="relative flex h-screen min-h-screen items-center justify-center px-6 overflow-hidden snap-start"
     >
       {/* Video hero background */}
       <div className="absolute inset-0 z-0">
