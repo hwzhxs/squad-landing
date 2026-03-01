@@ -440,8 +440,8 @@ function AgentText({ agent, index }: { agent: (typeof agents)[0]; index: number 
 
         {/* Subtitle — e.g. "The Police", "The Creator" */}
         <motion.p
-          className="mt-1 font-display font-light tracking-wide text-white/40"
-          style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)' }}
+          className="mt-0 font-display font-light leading-none tracking-tight text-white/40"
+          style={{ fontSize: 'clamp(3rem, 7vw, 6.5rem)' }}
           {...fade(0.14)}
         >
           {agent.subtitle}
