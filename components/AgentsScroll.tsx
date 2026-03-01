@@ -438,6 +438,15 @@ function AgentText({ agent, index }: { agent: (typeof agents)[0]; index: number 
           {agent.name}
         </motion.h2>
 
+        {/* Subtitle — e.g. "The Police", "The Creator" */}
+        <motion.p
+          className="mt-1 font-display font-light tracking-wide text-white/40"
+          style={{ fontSize: 'clamp(1rem, 2vw, 1.5rem)' }}
+          {...fade(0.14)}
+        >
+          {agent.subtitle}
+        </motion.p>
+
         {/* Nickname badge */}
         <motion.div
           className="mt-3 inline-block self-start rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-widest"
