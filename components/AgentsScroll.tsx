@@ -169,7 +169,7 @@ function AgentImage({
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={750}
-          className="h-[52vh] w-full object-cover object-top"
+          className={`${fromLeft ? 'h-[52vh]' : 'h-[60vh]'} w-full object-cover object-top`}
           priority={index === 0}
         />
 
