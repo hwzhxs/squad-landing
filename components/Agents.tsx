@@ -10,6 +10,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { agents } from '@/lib/agents';
+import { useAudio } from '@/lib/audioContext';
 
 // ─── Hex → rgb ────────────────────────────────────────────────────────────────
 function hexToRgb(hex: string): string {
@@ -36,6 +37,7 @@ function TiltImage({
   const rotateX = useSpring(rawY, { stiffness: 200, damping: 25 });
   const rotateY = useSpring(rawX, { stiffness: 200, damping: 25 });
   const [hovered, setHovered] = useState(false);
+  const { globalMuted } = useAudio();
 
   const onMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -55,11 +57,11 @@ function TiltImage({
       vid.currentTime = 0;
       vid.muted = true; // Start muted to guarantee autoplay works
       vid.play().then(() => {
-        // Unmute after play starts successfully
-        vid.muted = false;
+        // After play starts, respect globalMuted
+        vid.muted = globalMuted;
       }).catch(() => {});
     }
-  }, []);
+  }, [globalMuted]);
 
   const onMouseLeave = useCallback(() => {
     rawX.set(0);
@@ -72,6 +74,14 @@ function TiltImage({
       vid.muted = true;
     }
   }, [rawX, rawY]);
+
+  // When globalMuted changes while video is playing and hovered, update immediately
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid && hovered && !vid.paused) {
+      vid.muted = globalMuted;
+    }
+  }, [globalMuted, hovered]);
 
   const glowRgb = hexToRgb(agent.primary);
 

@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import SplitText from '@/components/SplitText';
+import { useAudio } from '@/lib/audioContext';
 
 // Base path prefix for GitHub Pages
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -19,7 +20,7 @@ export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [userMuted, setUserMuted] = useState(true);
+  const { globalMuted, setGlobalMuted } = useAudio();
   const [heroInView, setHeroInView] = useState(true);
   const [sloganVisible, setSloganVisible] = useState(false);
 
@@ -62,13 +63,13 @@ export default function Hero() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    video.muted = heroInView ? userMuted : true;
-  }, [heroInView, userMuted]);
+    video.muted = heroInView ? globalMuted : true;
+  }, [heroInView, globalMuted]);
 
   function toggleMute() {
-    if (!heroInView && userMuted) return;
-    const next = !userMuted;
-    setUserMuted(next);
+    if (!heroInView && globalMuted) return;
+    const next = !globalMuted;
+    setGlobalMuted(next);
     if (videoRef.current) videoRef.current.muted = next;
   }
 
@@ -83,7 +84,7 @@ export default function Hero() {
         <video
           ref={videoRef}
           autoPlay
-          muted={userMuted}
+          muted={globalMuted}
           playsInline
           onEnded={handleEnded}
           className="absolute inset-0 h-full w-full object-cover object-center"
@@ -98,10 +99,10 @@ export default function Hero() {
       {/* Mute button */}
       <button
         onClick={toggleMute}
-        aria-label={userMuted ? 'Unmute video' : 'Mute video'}
+        aria-label={globalMuted ? 'Unmute video' : 'Mute video'}
         className="absolute bottom-6 right-6 z-20 flex items-center gap-2 rounded-full border border-white/20 bg-black/40 px-4 py-2 text-sm text-white/80 backdrop-blur-sm transition hover:bg-black/60 hover:text-white"
       >
-        {userMuted ? (
+        {globalMuted ? (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
               <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905H6.44l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM17.78 9.22a.75.75 0 10-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 101.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 101.06-1.06L20.56 12l1.72-1.72a.75.75 0 00-1.06-1.06l-1.72 1.72-1.72-1.72z" />
