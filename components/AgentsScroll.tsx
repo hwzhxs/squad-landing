@@ -118,6 +118,7 @@ function AgentImage({
     const v = videoRef.current;
     if (!v) return;
     if (inView) {
+      v.currentTime = 0; // restart from beginning each time
       v.muted = mutedRef.current ?? true; // non-stale ref
       v.play().catch(() => {});
     } else {
