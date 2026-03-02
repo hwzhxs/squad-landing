@@ -130,8 +130,9 @@ function AgentImage({
 
       {/* Image frame */}
       <div
-        className="relative overflow-hidden rounded-2xl"
+        className="relative overflow-hidden rounded-2xl w-full"
         style={{
+          aspectRatio: '3/4',
           boxShadow: `0 0 0 1px rgba(${rgb}, 0.2), 0 24px 80px rgba(0,0,0,0.5)`,
         }}
         onMouseEnter={handleMouseEnter}
@@ -142,7 +143,7 @@ function AgentImage({
           alt={`${agent.name} — ${agent.nickname}`}
           width={600}
           height={750}
-          className="h-[60vh] w-full object-cover object-top"
+          className="w-full h-full object-cover object-top"
           priority={index === 0}
         />
 
