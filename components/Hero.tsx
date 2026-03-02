@@ -87,7 +87,7 @@ export default function Hero() {
     <section
       ref={sectionRef}
       aria-label="Hero"
-      className="relative flex h-screen min-h-screen items-center justify-center px-6 overflow-hidden snap-start"
+      className="relative flex h-screen min-h-screen items-center justify-start px-6 overflow-hidden snap-start"
     >
       {/* Video hero background */}
       <div className="absolute inset-0 z-0">
@@ -132,14 +132,17 @@ export default function Hero() {
       </button>
 
       {/* DREAM TEAM — Hollywood movie-poster style outlined title */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center">
+      <div
+        className="relative z-10 flex flex-col items-center text-center w-full"
+        style={{ marginTop: '-10vh' }}
+      >
         <motion.h1
           initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 1.06 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8, duration: prefersReducedMotion ? 1.5 : 1.5, ease: [0.16, 1, 0.3, 1] }}
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 'clamp(4rem, 15vw, 12rem)',
+            fontSize: 'clamp(6rem, 25vw, 20rem)',
             letterSpacing: '0.3em',
             textTransform: 'uppercase',
             color: 'transparent',
