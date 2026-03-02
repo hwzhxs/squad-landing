@@ -1,8 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import SplitText from '@/components/SplitText';
+import { motion } from 'framer-motion';
 import { useGlobalAudio } from '@/context/GlobalAudioContext';
 
 // Base path prefix for GitHub Pages
@@ -15,9 +14,25 @@ export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
 
   const [heroInView, setHeroInView] = useState(true);
-  const [sloganVisible, setSloganVisible] = useState(false);
+  const [glowActive, setGlowActive] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   const { muted, mutedRef, toggleMute, registerVideo, unregisterVideo } = useGlobalAudio();
+
+  // Detect prefers-reduced-motion
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Trigger glow intensification after title is fully visible (delay 2s after mount)
+  useEffect(() => {
+    const timer = setTimeout(() => setGlowActive(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Register hero video with global audio on mount
   useEffect(() => {
@@ -44,15 +59,6 @@ export default function Hero() {
     video.muted = muted;
     if (!muted) video.volume = 1;
   }, [muted]);
-
-  // Scroll listener: reveal slogan when user scrolls > 80px
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.scrollY > 80) setSloganVisible(true);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // IntersectionObserver: track hero visibility
   useEffect(() => {
@@ -93,10 +99,10 @@ export default function Hero() {
           playsInline
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0" style={{ background: 'rgba(10,10,10,0.72)' }} />
+        <div className="absolute inset-0" style={{ background: 'rgba(10,10,10,0.48)' }} />
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at top, rgba(26,26,26,0.6) 0%, transparent 60%)' }}
+          style={{ background: 'radial-gradient(ellipse at top, rgba(26,26,26,0.35) 0%, transparent 60%)' }}
         />
       </div>
 
@@ -125,36 +131,45 @@ export default function Hero() {
         )}
       </button>
 
-      {/* Slogan — char-by-char cinematic reveal on scroll */}
-      <AnimatePresence>
-        {sloganVisible && (
-          <div className="relative z-10 mx-auto max-w-[900px] text-center" style={{ perspective: '1000px' }}>
-            <h1 className="font-display text-[clamp(2.5rem,8vw,5rem)] font-normal leading-[1.1] tracking-[-0.02em] text-text-primary">
-              <SplitText
-                text="Four agents. One mission."
-                delay={50}
-                animationFrom={{ opacity: 0, transform: 'translateY(20px)' }}
-                animationTo={{ opacity: 1, transform: 'translateY(0)' }}
-                easing="easeOutCubic"
-                threshold={0.1}
-                rootMargin="-50px"
-              />
-            </h1>
-            <p className="mx-auto mt-8 max-w-[600px] text-lg text-text-secondary">
-              <SplitText
-                text="Think it, build it, check it, ship it."
-                animateBy="words"
-                delay={80}
-                animationFrom={{ opacity: 0, transform: 'translateY(12px)' }}
-                animationTo={{ opacity: 1, transform: 'translateY(0)' }}
-                easing="easeOutCubic"
-                threshold={0.1}
-                rootMargin="-50px"
-              />
-            </p>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* DREAM TEAM — Hollywood movie-poster style outlined title */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-center">
+        <motion.h1
+          initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: prefersReducedMotion ? 1.5 : 1.5, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 'clamp(4rem, 15vw, 12rem)',
+            letterSpacing: '0.3em',
+            textTransform: 'uppercase',
+            color: 'transparent',
+            WebkitTextStroke: '1.5px rgba(255,255,255,0.85)',
+            paintOrder: 'stroke fill',
+            textShadow: glowActive
+              ? '0 0 30px rgba(255,255,255,0.14), 0 0 60px rgba(255,255,255,0.08)'
+              : '0 0 40px rgba(255,255,255,0.08), 0 0 80px rgba(255,255,255,0.04)',
+            lineHeight: 1,
+            userSelect: 'none',
+            transition: 'text-shadow 0.5s ease',
+          }}
+        >
+          DREAM TEAM
+        </motion.h1>
+
+        {/* Thin horizontal rule — movie poster finishing touch */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5, duration: 0.5, ease: 'easeOut' }}
+          style={{
+            marginTop: '1.5rem',
+            height: '1px',
+            width: '40%',
+            maxWidth: '400px',
+            background: 'rgba(255,255,255,0.15)',
+          }}
+        />
+      </div>
     </section>
   );
 }

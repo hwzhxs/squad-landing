@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable}`}>
       <head>
         <meta charSet="utf-8" />
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
       </head>
       <body>
         <noscript>
