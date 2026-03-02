@@ -65,7 +65,7 @@ function TiltImage({
   return (
     <motion.div
       ref={ref}
-      className="relative mx-auto w-[45%] md:w-[40%]"
+      className="relative mx-auto w-[90%] sm:w-[70%] md:w-[40%]"
       style={{
         rotateX,
         rotateY,

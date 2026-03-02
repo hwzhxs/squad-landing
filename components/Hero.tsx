@@ -134,7 +134,7 @@ export default function Hero() {
       {/* DREAM TEAM — Hollywood movie-poster style outlined title */}
       <div
         className="relative z-10 flex flex-col items-center text-center w-full"
-        style={{ marginTop: '-10vh' }}
+        style={{ marginTop: '-10vh', overflow: 'visible' }}
       >
         <motion.h1
           initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 1.06 }}
@@ -142,8 +142,9 @@ export default function Hero() {
           transition={{ delay: 0.8, duration: prefersReducedMotion ? 1.5 : 1.5, ease: [0.16, 1, 0.3, 1] }}
           style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 'clamp(6rem, 25vw, 20rem)',
-            letterSpacing: '0.3em',
+            fontSize: 'clamp(2rem, 18vw, 20rem)',
+            letterSpacing: 'clamp(0.04em, 1.5vw, 0.3em)',
+            whiteSpace: 'nowrap',
             textTransform: 'uppercase',
             color: 'transparent',
             WebkitTextStroke: '1.5px rgba(255,255,255,0.85)',
