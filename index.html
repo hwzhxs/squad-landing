@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Agentic Browser — 设计战略汇报</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Inter:wght@400;500;600&family=Red+Hat+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fef9ed;
+    --text: #5d524b;
+    --text-dark: #262626;
+    --surface: #ffffff;
+    --surface-warm: #fbf4e5;
+    --button-bg: #f7ecd9;
+    --grey: #f2f2f2;
+    --shadow: rgba(93,82,75,0.15);
+    --shadow-deep: rgba(93,82,75,0.3);
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Red Hat Mono', monospace;
+    --max-width: 960px;
+    --ease-out: cubic-bezier(0.43, 0.195, 0.02, 1);
+    --ease-snap: cubic-bezier(0.835, 0.085, 0.005, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(254,249,237,0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(93,82,75,0.08);
+    padding: 16px 40px;
+    display: flex; align-items: center; gap: 32px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  nav a {
+    color: var(--text);
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  nav a:hover { opacity: 1; }
+  nav .brand { font-weight: 500; opacity: 1; font-size: 12px; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 160px 40px 120px;
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text);
+    opacity: 0.5;
+    margin-bottom: 32px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 7vw, 88px);
+    font-weight: 400;
+    line-height: 1.0;
+    letter-spacing: -3px;
+    color: var(--text-dark);
+    margin-bottom: 40px;
+  }
+  .hero-subtitle {
+    font-size: 20px;
+    line-height: 1.6;
+    max-width: 640px;
+    color: var(--text);
+    opacity: 0.8;
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 120px 40px;
+  }
+  .section-divider {
+    width: 48px;
+    height: 1px;
+    background: var(--text);
+    opacity: 0.2;
+    margin-bottom: 48px;
+  }
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-bottom: 16px;
+  }
+  section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 4.5vw, 56px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    color: var(--text-dark);
+    margin-bottom: 48px;
+  }
+  section h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    color: var(--text-dark);
+    margin-bottom: 16px;
+    margin-top: 56px;
+  }
+  section h3:first-of-type { margin-top: 0; }
+  section p { margin-bottom: 20px; max-width: 720px; }
+  section p strong { color: var(--text-dark); font-weight: 600; }
+
+  /* CALLOUT */
+  .callout {
+    background: var(--surface-warm);
+    padding: 32px 40px;
+    margin: 40px 0;
+    border-left: 3px solid var(--text);
+    font-size: 18px;
+    line-height: 1.6;
+  }
+  .callout strong { color: var(--text-dark); }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 32px;
+    margin: 48px 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    padding: 32px;
+    filter: drop-shadow(0 4px 40px var(--shadow));
+  }
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -2px;
+    color: var(--text-dark);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    line-height: 1.4;
+  }
+
+  /* COMPARISON TABLE */
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 48px 0;
+    font-size: 15px;
+  }
+  .comparison-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 16px 20px;
+    border-bottom: 2px solid var(--text-dark);
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+  .comparison-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(93,82,75,0.1);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .comparison-table tr:hover td {
+    background: var(--surface-warm);
+  }
+  .comparison-table .product-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    white-space: nowrap;
+  }
+
+  /* LIST */
+  .insight-list {
+    list-style: none;
+    padding: 0;
+    margin: 32px 0;
+  }
+  .insight-list li {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(93,82,75,0.08);
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .insight-list .num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    opacity: 0.4;
+    flex-shrink: 0;
+    width: 24px;
+  }
+
+  /* DARK SECTION */
+  .dark-section {
+    background: var(--text);
+    color: var(--bg);
+    padding: 120px 40px;
+    margin: 80px 0;
+  }
+  .dark-section .inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+  .dark-section h2 {
+    color: var(--bg);
+  }
+  .dark-section .section-tag { color: var(--bg); }
+  .dark-section p { color: rgba(254,249,237,0.75); }
+  .dark-section strong { color: var(--bg); }
+  .dark-section .callout {
+    background: rgba(254,249,237,0.08);
+    border-left-color: var(--bg);
+    color: rgba(254,249,237,0.85);
+  }
+
+  /* PRINCIPLE CARDS */
+  .principle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 48px 0;
+  }
+  .principle-card {
+    background: var(--surface);
+    padding: 40px;
+    filter: drop-shadow(0 2px 20px var(--shadow));
+  }
+  .principle-card .p-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-bottom: 16px;
+  }
+  .principle-card h4 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-dark);
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .principle-card p {
+    font-size: 15px;
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+
+  /* FLOW DIAGRAM */
+  .flow-steps {
+    display: flex;
+    gap: 16px;
+    margin: 48px 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+  .flow-step {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface);
+    padding: 28px 24px;
+    filter: drop-shadow(0 2px 20px var(--shadow));
+    position: relative;
+  }
+  .flow-step::after {
+    content: '→';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--text);
+    opacity: 0.3;
+  }
+  .flow-step:last-child::after { display: none; }
+  .flow-step .step-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    opacity: 0.4;
+    margin-bottom: 8px;
+  }
+  .flow-step h5 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+  }
+  .flow-step p {
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.7;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--grey);
+    padding: 60px 40px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    opacity: 0.5;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 12px 20px; gap: 16px; font-size: 10px; overflow-x: auto; }
+    .hero { padding: 140px 24px 80px; }
+    section { padding: 80px 24px; }
+    .dark-section { padding: 80px 24px; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .comparison-table { font-size: 13px; }
+    .comparison-table th, .comparison-table td { padding: 12px 12px; }
+    .flow-steps { flex-direction: column; }
+    .flow-step::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">Research Report</span>
+  <a href="#pain">痛点</a>
+  <a href="#behavior">用户行为</a>
+  <a href="#market">市场</a>
+  <a href="#boundary">边界</a>
+  <a href="#principles">原则</a>
+  <a href="#strategy">战略</a>
+  <a href="#concept">Concept</a>
+  <a href="#conclusion">结论</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Design Strategy Report · March 2026</div>
+  <h1>Mobile Agentic Browser</h1>
+  <p class="hero-subtitle">
+    Mobile browser 15 年没变过。50 亿设备上运行着为「看网页」设计的工具，但用户真正想做的是「完成任务」。Agentic AI 正在改写这个等式。
+  </p>
+</div>
+
+<!-- CH1: USER BEHAVIOR -->
+<section id="behavior">
+  <div class="section-divider"></div>
+  <div class="section-tag">Chapter 01</div>
+  <h2>用户在 Mobile Browser 里到底在做什么</h2>
+
+  <p>在谈设计之前，必须先回答一个基本问题：<strong>人们打开手机浏览器的时候，到底在做什么？</strong>已有的用户研究给出了清晰的画像。</p>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-number">&lt;6%</div>
+      <div class="stat-label">智能手机总使用时间中，浏览器 + 搜索 App 的占比<br><em>Source: Data.ai, 2025</em></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">64%</div>
+      <div class="stat-label">全球 web 流量来自 mobile 设备<br><em>Source: StatCounter, 2025</em></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">70%</div>
+      <div class="stat-label">Mobile 搜索在 1 小时内引发行动<br><em>Source: Google Consumer Insights</em></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">92%</div>
+      <div class="stat-label">Mobile 时间花在 App 而非浏览器<br><em>Source: Data.ai, 2024</em></div>
+    </div>
+  </div>
+
+  <h3>核心行为模式</h3>
+
+  <p><strong>搜索 → 行动（Search-to-Action）</strong>是 mobile browser 的第一用途。68% 的用户在手机上开始购物调研，即使最终在桌面完成购买（Google Multichannel Study）。82% 的人在重大购买前会在手机上搜索。55-60% 的 Google 搜索发生在 mobile 上。</p>
+
+  <p><strong>本地发现（Local Discovery）</strong>是第二大场景。88% 的 "near me" 搜索发生在手机上，76% 在当天产生线下到访。这是 desktop 几乎不存在的场景——人在路上、在商场、在餐厅门口，需要即时答案。</p>
+
+  <p><strong>社交驱动的浏览（Social-Driven Browsing）</strong>是第三大来源。31% 的 mobile web session 发生在 App 内置浏览器（Instagram、微信、微博的内嵌 webview）。用户从社交内容点击链接 → 进入浏览器 → 完成购买或获取信息。</p>
+
+  <p><strong>碎片化消费（Snacking）</strong>是第四种模式。Mobile 用户平均每次访问 3 个页面，停留时间 700-775 秒，远低于 desktop 的 7 个页面和 996-1918 秒。Mobile browsing 是快速、浅层、频繁的。</p>
+
+  <div class="callout">
+    <strong>关键洞察：</strong>Mobile browser 的用户不是在"浏览"——他们在<strong>寻找答案、做决策、完成交易</strong>。但浏览器给他们的工具仍然是「打开一个又一个网页」。92% 的时间用户选择留在 App 里，因为 App 能直接帮他们做事。Browser 只剩下 App 做不了的事：开放 web 上的搜索和比较。
+  </div>
+
+  <h3>五个核心痛点</h3>
+
+  <ol class="insight-list">
+    <li>
+      <span class="num">01</span>
+      <div><strong>信息过载，找不到答案。</strong>用户想要答案，得到 10 个蓝色链接。Mobile 上更痛——屏幕小，每个结果要点进去、等加载、扫读、返回、再试。一个简单的比价任务，desktop 3 分钟，mobile 10 分钟。</div>
+    </li>
+    <li>
+      <span class="num">02</span>
+      <div><strong>多步任务断裂。</strong>订机票 = 搜航班 → 比价 → 选座 → 填信息 → 支付。每步都是独立页面，中间被广告、弹窗、登录墙打断。Mobile cart abandonment rate 高达 70%（Baymard 2025），比 desktop 高 24 个百分点。</div>
+    </li>
+    <li>
+      <span class="num">03</span>
+      <div><strong>Tab 管理是灾难。</strong>平均用户打开 12-15 个 tab，90% 再也不会回去看。Mobile 上 tab 切换体验极差。但没人敢关，因为"可能还要用"。</div>
+    </li>
+    <li>
+      <span class="num">04</span>
+      <div><strong>上下文不断丢失。</strong>研究一个话题，打开 8 个页面，读了半小时。第二天想继续——全忘了。浏览器只记 URL，不记你学到了什么。</div>
+    </li>
+    <li>
+      <span class="num">05</span>
+      <div><strong>隐私焦虑 vs 便利的永恒矛盾。</strong>每个页面平均 17 个 tracker，cookie banner 占半个屏幕。想要便利就要出卖隐私，想要隐私就要忍受不便。</div>
+    </li>
+  </ol>
+</section>
+
+<!-- CH2: MARKET -->
+<section id="market">
+  <div class="section-divider"></div>
+  <div class="section-tag">Chapter 02</div>
+  <h2>市场格局：巨头入场，窗口正在关闭</h2>
+
+  <p>2025 是 agentic browser 元年。四个重量级玩家同时入场，但全部 desktop first——<strong>mobile agentic browser 目前是一片蓝海。</strong></p>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>产品</th>
+        <th>公司</th>
+        <th>核心定位</th>
+        <th>Agent 架构</th>
+        <th>Mobile</th>
+        <th>定价</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="product-name">Atlas</td>
+        <td>OpenAI</td>
+        <td>ChatGPT 的浏览器延伸</td>
+        <td>OWL（独立进程控制浏览器，非 JS 注入）</td>
+        <td>Coming 2026</td>
+        <td>免费 + Plus/Pro</td>
+      </tr>
+      <tr>
+        <td class="product-name">Comet</td>
+        <td>Perplexity</td>
+        <td>搜索引擎公司的浏览器</td>
+        <td>内置 extension 注入 DOM（Sidecar panel）</td>
+        <td>Coming soon</td>
+        <td>免费 + Pro $20/mo</td>
+      </tr>
+      <tr>
+        <td class="product-name">Neon</td>
+        <td>Opera</td>
+        <td>Chat / Do / Make 三模式</td>
+        <td>本地 DOM 处理 + 双 agent（browser + virtual）</td>
+        <td>无计划</td>
+        <td>~$20/mo</td>
+      </tr>
+      <tr>
+        <td class="product-name">Dia</td>
+        <td>Browser Co → Atlassian</td>
+        <td>AI-first 极简浏览器</td>
+        <td>Intelligent cursor + 上下文 AI</td>
+        <td>Mac only</td>
+        <td>免费 + Pro</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>关键市场信号</h3>
+  <ol class="insight-list">
+    <li>
+      <span class="num">01</span>
+      <div><strong>Dia 被 Atlassian $6.1 亿收购</strong>（2025.10）——独立消费级 AI browser 的商业可行性受到质疑。Arc 的教训：创新 UI 很酷但大众不买单。Dia 从 C 端转向企业 B2B。</div>
+    </li>
+    <li>
+      <span class="num">02</span>
+      <div><strong>全部 desktop first</strong>——Atlas macOS only，Comet Windows + Mac，Neon desktop only。Mobile 版全在 "coming soon"。没有人在 mobile 上认真做 agentic browser。</div>
+    </li>
+    <li>
+      <span class="num">03</span>
+      <div><strong>安全事件频发</strong>——Comet 的 CometJacking 漏洞（prompt injection）、MCP API 默认开放本地命令执行。Agentic = 更大的攻击面。</div>
+    </li>
+    <li>
+      <span class="num">04</span>
+      <div><strong>Chrome 71% + Safari 20% = 91%</strong>——mobile browser 市场高度集中。Google 和 Apple 一定会在 Chrome/Safari 里加 agent 能力。但大象转身慢，且受广告模式和平台政策制约。</div>
+    </li>
+  </ol>
+</section>
+
+<!-- CH3: BOUNDARY -->
+<div class="dark-section" id="boundary">
+  <div class="inner">
+    <div class="section-tag">Chapter 03</div>
+    <h2>关键问题：为什么是 Browser，不是 ChatGPT App？</h2>
+
+    <p>这是最重要的战略问题。如果 ChatGPT App 已经能上网、能搜索、能执行任务——<strong>为什么用户还需要一个 agentic browser？</strong>如果回答不了这个问题，产品就没有存在的理由。</p>
+
+    <div class="callout">
+      <strong>核心论点：</strong>AI App（ChatGPT/Claude）和 Agentic Browser 的边界，在于<strong>「谁拥有上下文」</strong>。AI App 从零开始，每次都要你描述问题。Browser 已经在你的问题现场。
+    </div>
+
+    <h3>四个本质区别</h3>
+
+    <p><strong>1. 上下文拥有权不同</strong></p>
+    <p>ChatGPT App：你需要把问题描述给 AI。"帮我在京东上找一个 500 块以下的空气炸锅"——AI 要自己打开京东、搜索、理解页面。</p>
+    <p>Agentic Browser：你已经在京东的搜索结果页上了。AI 直接看到你看到的东西。"帮我比较这几个" 就够了。<strong>Browser 拥有实时的、第一人称的 web 上下文。</strong>ChatGPT Agent 拥有的是一个隔离的虚拟机里的模拟浏览器。</p>
+
+    <p><strong>2. 操作对象不同</strong></p>
+    <p>ChatGPT Agent 操作的是一个沙盒环境——它在自己的虚拟电脑上打开网页、截图、点击。用户的 cookie、登录状态、历史记录，它都没有。所以它无法帮你在已登录的淘宝里下单，无法看到你的 Gmail 里的邮件。</p>
+    <p>Agentic Browser 操作的是<strong>用户真实的浏览环境</strong>——你的登录状态、你的购物车、你的收藏夹。它能在你已经登录的网站上直接行动。这是 Consumer Reports 的评测（2025）明确指出的关键区别。</p>
+
+    <p><strong>3. 交互模型不同</strong></p>
+    <p>AI App 是<strong>对话驱动</strong>的——你说，它做，你看结果，你再说。这是一个串行的、语言中心的交互。</p>
+    <p>Browser 是<strong>混合驱动</strong>的——有时候你自己浏览，有时候让 AI 接管，有时候你和 AI 同时在一个页面上工作。Atlas 的设计就是这样：用户可以随时从 Agent Mode 切回手动浏览，无缝衔接。</p>
+    <p>这个区别在 mobile 上更重要。<strong>在手机上打开 ChatGPT 描述一个购物需求，不如直接在购物页面上说 "帮我比较"。</strong></p>
+
+    <p><strong>4. 入口位置不同</strong></p>
+    <p>AI App 是一个独立入口——你要专门打开它。Browser 是你已经在用的东西。Data.ai 数据显示 mobile 上 92% 的时间在 App 里，但 64% 的 web traffic 来自 mobile——说明人们频繁地在 App 和 Browser 之间切换。</p>
+    <p><strong>Browser 是所有 web 行为的必经之路</strong>，AI App 是你主动去找的额外工具。Agent 能力放在 browser 里 = 零额外步骤。</p>
+
+    <h3>所以边界是什么？</h3>
+
+    <table class="comparison-table" style="color: var(--bg);">
+      <thead>
+        <tr>
+          <th style="color: var(--bg); border-bottom-color: var(--bg);">维度</th>
+          <th style="color: var(--bg); border-bottom-color: var(--bg);">AI App（ChatGPT）</th>
+          <th style="color: var(--bg); border-bottom-color: var(--bg);">Agentic Browser</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>最佳场景</td>
+          <td>从零开始的研究、写作、分析</td>
+          <td>基于当前浏览的即时任务</td>
+        </tr>
+        <tr>
+          <td>上下文</td>
+          <td>用户描述 / connector 授权</td>
+          <td>实时页面 + 登录态 + 历史</td>
+        </tr>
+        <tr>
+          <td>操作能力</td>
+          <td>沙盒虚拟机，无用户态</td>
+          <td>真实浏览器，有用户态</td>
+        </tr>
+        <tr>
+          <td>交互</td>
+          <td>对话串行</td>
+          <td>手动 + AI 混合，随时切换</td>
+        </tr>
+        <tr>
+          <td>安全风险</td>
+          <td>低（隔离沙盒）</td>
+          <td>高（真实环境，可操作敏感数据）</td>
+        </tr>
+        <tr>
+          <td>Mobile 优势</td>
+          <td>独立入口，需主动打开</td>
+          <td>已在用，零切换成本</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>结论：</strong>AI App 适合"我想做一件新的事"。Agentic Browser 适合"我正在做一件事，帮我做得更好更快"。两者不是替代关系，是<strong>互补关系</strong>。但在 mobile 上，browser 的优势更大——因为 mobile 用户的核心行为就是在浏览中触发行动。
+    </div>
+  </div>
+</div>
+
+<!-- CH4: PRINCIPLES -->
+<section id="principles">
+  <div class="section-divider"></div>
+  <div class="section-tag">Chapter 04</div>
+  <h2>五个设计原则</h2>
+
+  <div class="principle-grid">
+    <div class="principle-card">
+      <div class="p-num">Principle 01</div>
+      <h4>Intent-First, Not URL-First</h4>
+      <p>地址栏是 1994 年的设计。输入界面应该是意图捕获器：支持自然语言、语音、截图。用户不想输入 URL，他们想说 "帮我找今晚苏州最好的日料，人均 300 以内"。</p>
+    </div>
+    <div class="principle-card">
+      <div class="p-num">Principle 02</div>
+      <h4>Task State > Page State</h4>
+      <p>核心 UI 从「你打开了哪些页面」变成「你有哪些进行中的任务」。Tab bar → Task bar。不是 "淘宝 - 京东"，而是 "比价空气炸锅（进行中）- 订餐厅（等你确认）"。</p>
+    </div>
+    <div class="principle-card">
+      <div class="p-num">Principle 03</div>
+      <h4>Progressive Autonomy</h4>
+      <p>三级控制：L1 Suggest（AI 建议，你执行）→ L2 Execute（AI 执行，你确认关键节点）→ L3 Autopilot（全自动，高风险时暂停）。Per-task 可调，随信任升级。</p>
+    </div>
+    <div class="principle-card">
+      <div class="p-num">Principle 04</div>
+      <h4>Transparent Agency</h4>
+      <p>两层透明：What（agent 当前在做什么）+ Why（为什么做这个决策）。默认只显示 What，点击展开 Why。让用户感到"在掌控"，而非"被代替"。</p>
+    </div>
+    <div class="principle-card" style="grid-column: 1 / -1;">
+      <div class="p-num">Principle 05</div>
+      <h4>Memory as a Feature</h4>
+      <p>浏览器 history 只是 URL 列表。Agentic browser 应记住语义：你上周研究了什么、对比了哪些选项、在哪个页面读到了关键信息。"继续我上周的调研" 应该是一个按钮。浏览不再一次性，而是可积累的。</p>
+    </div>
+  </div>
+</section>
+
+<!-- CH5: STRATEGY -->
+<section id="strategy">
+  <div class="section-divider"></div>
+  <div class="section-tag">Chapter 05</div>
+  <h2>三个战略方向：Mobile 特有的机会</h2>
+
+  <p>Desktop agentic browser 的战场已拥挤。但 Mobile 有三个 Desktop 没有的独特机会。</p>
+
+  <h3>方向 A：碎片时间的任务完成者</h3>
+  <p>Mobile 用户的使用是碎片化的——地铁上 3 分钟、等咖啡 2 分钟。这些碎片时间里，传统浏览器完不成任何多步任务。</p>
+  <p><strong>机会：</strong>用 agent 把 10 分钟的任务压缩到 1 分钟用户时间。30 秒启动 + 30 秒确认结果，中间 9 分钟让 agent 后台完成。</p>
+
+  <h3>方向 B：语音驱动的 Hands-Free Browsing</h3>
+  <p>Mobile 有麦克风和耳机。开车、做饭、健身时手不空但脑子空着。全球超过 1/5 的人口已经在使用语音搜索（DataReportal 2024）。</p>
+  <p><strong>机会：</strong>纯语音 browsing。"帮我看看明天苏州天气" → agent 搜索 → 语音播报。不需要看屏幕。Arc Search 已有 "举起手机到耳边 = 开始语音对话" 的交互。</p>
+
+  <h3>方向 C：跨信息源的统一任务层</h3>
+  <p>这是最大的机会也是最难的。Mobile 上完成一个任务要在多个 app/网站之间跳转（浏览器搜餐厅 → 大众点评看评价 → 微信问朋友 → 高德导航）。每次跳转都丢失上下文。</p>
+  <p><strong>机会：</strong>Browser 变成任务的"中控台"，agent 协调多个信息源，用户只在 browser 里看到统一的任务视图。不替代其他 app，而是整合它们的信息。</p>
+</section>
+
+<!-- CH6: CONCEPT -->
+<section id="concept">
+  <div class="section-divider"></div>
+  <div class="section-tag">Chapter 06</div>
+  <h2>具体 Concept：Task Flow Browser</h2>
+
+  <p>核心隐喻：浏览器不是「窗口」，是「助理的工作台」。</p>
+
+  <h3>界面结构</h3>
+
+  <div class="flow-steps">
+    <div class="flow-step">
+      <div class="step-num">底部</div>
+      <h5>意图输入区</h5>
+      <p>输入框 + 麦克风 + 相机。自然语言 / URL / 语音 / 截图识别。AI 理解意图后决定行动。</p>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">中间</div>
+      <h5>任务卡片流</h5>
+      <p>每个任务 = 一张卡片。⏳执行中 / 🔔需确认 / ✅已完成。左滑归档 / 右滑追加指令。</p>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">顶部</div>
+      <h5>智能上下文栏</h5>
+      <p>当前任务名 + agent 状态 + 可信度指示器。展开看引用来源和评分。</p>
+    </div>
+  </div>
+
+  <h3>四个关键交互</h3>
+
+  <ol class="insight-list">
+    <li>
+      <span class="num">01</span>
+      <div><strong>任务启动</strong> — 用户说 "帮我比较 iPhone 16 和 Pixel 9 的相机" → AI 创建任务卡片 → 显示进度 "正在收集评测数据（3/7 来源）..." → 完成后：结构化对比表 + 结论 + 来源链接。</div>
+    </li>
+    <li>
+      <span class="num">02</span>
+      <div><strong>后台执行 + 推送回调</strong> — 用户启动任务后退出 app → Agent 继续后台执行 → 完成后推送 "你的机票比价完成了，找到 4 个选项" → 点通知直接看结果卡片。</div>
+    </li>
+    <li>
+      <span class="num">03</span>
+      <div><strong>确认门控</strong> — Agent 准备下单 → 卡片变 🔔 "准备在京东下单，¥299，确认？" → 一键确认或修改。高风险操作永远不自动执行。</div>
+    </li>
+    <li>
+      <span class="num">04</span>
+      <div><strong>记忆续接</strong> — 第二天打开 app → "你昨天在研究空气炸锅，要继续吗？" → 恢复完整上下文：之前对比的商品、你的倾向、待决定的问题。</div>
+    </li>
+  </ol>
+
+  <h3>解决什么 / 带来什么</h3>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-number">10→1</div>
+      <div class="stat-label">分钟。用户时间从 10 分钟压缩到 1 分钟，其余让 agent 后台完成。</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">0</div>
+      <div class="stat-label">Tab。没有 tab 了。用户管理的是任务，不是窗口。</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">∞</div>
+      <div class="stat-label">记忆。浏览可积累。"继续上周的调研" 是一个按钮。</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3级</div>
+      <div class="stat-label">自主度。从建议到执行到全自动，用户始终有控制感。</div>
+    </div>
+  </div>
+</section>
+
+<!-- CH7: RISKS + CONCLUSION -->
+<div class="dark-section" id="conclusion">
+  <div class="inner">
+    <div class="section-tag">Chapter 07</div>
+    <h2>风险、诚实的不确定性，与结论</h2>
+
+    <h3>四个必须面对的风险</h3>
+
+    <ol class="insight-list" style="color: rgba(254,249,237,0.75);">
+      <li>
+        <span class="num" style="color: rgba(254,249,237,0.4);">01</span>
+        <div><strong>iOS 后台限制</strong> — Background App Refresh 不可靠，agent 长任务需要服务端执行 + 设备同步。这增加了架构复杂度和成本。</div>
+      </li>
+      <li>
+        <span class="num" style="color: rgba(254,249,237,0.4);">02</span>
+        <div><strong>中国市场的封闭生态</strong> — 微信/淘宝/大众点评都是围墙花园，跨 app 信息整合在中国比欧美更难。</div>
+      </li>
+      <li>
+        <span class="num" style="color: rgba(254,249,237,0.4);">03</span>
+        <div><strong>商业可行性</strong> — Dia 被收购的教训：独立消费级 AI browser 生存困难。需要大模型或搜索引擎的资源后盾，或找到差异化的盈利模式。</div>
+      </li>
+      <li>
+        <span class="num" style="color: rgba(254,249,237,0.4);">04</span>
+        <div><strong>安全</strong> — Agent 权限 = 更大的攻击面。Comet 的 CometJacking、MCP API 漏洞是前车之鉴。安全设计必须从 Day 1 严格，不能后补。</div>
+      </li>
+    </ol>
+
+    <div class="callout">
+      <strong>最终判断：</strong><br><br>
+      Mobile browser 15 年没本质变化。现在变的时候到了——不是因为技术成熟了，而是因为用户的痛点大到无法忽视（70% 的购物车在手机上被放弃），同时 AI 能力刚好跨过了"能替你操作网页"的门槛。<br><br>
+      窗口期约 12-18 个月。Google 和 Apple 一定会把 agent 塞进 Chrome 和 Safari。但它们的 agent 受限于广告模型和平台政策。这给独立产品留了一条缝隙——做一个<strong>真正站在用户这边的 mobile agentic browser</strong>。<br><br>
+      关键不是"做不做"，而是"有没有差异化的资源优势"来支撑这个产品活过 Google/Apple 的追赶期。
+    </div>
+  </div>
+</div>
+
+<footer>
+  Mobile Agentic Browser · Design Strategy Report · Thinker 🧠 · March 2026
+</footer>
+
+</body>
+</html>
